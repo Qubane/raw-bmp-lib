@@ -18,6 +18,14 @@ def float_rgb_to_rgb888(r: float, g: float, b: float) -> tuple[int, int, int]:
     return int(r * 255), int(g * 255), int(b * 255)
 
 
+def float_rgb_to_rgb565(r: float, g: float, b: float) -> tuple[int, int, int]:
+    """
+    Converts float rgb values to rgb888. Each component is in range 0 - 1
+    """
+
+    return int(r * 31), int(g * 63), int(b * 31)
+
+
 def combine_rgb888(r: int, g: int, b: int) -> int:
     """
     Combines rgb888 into 1 value
