@@ -1,4 +1,13 @@
-from random import random
+def rbg888_to_rgb565(r: int, g: int, b: int) -> tuple[int, int, int]:
+    """
+    Converts rgb888 to rgb565
+    """
+
+    red = int(r / 255 * 31)
+    green = int(g / 255 * 63)
+    blue = int(b / 255 * 31)
+
+    return red, green, blue
 
 
 def make_bitmap(image: list[list[int]], bpp: int = 24) -> bytes:
