@@ -38,14 +38,30 @@ def make_bitmap(image: list[list[int]], bpp: int = 24) -> bytes:
     padding = ((4 - ((width * (bpp // 8)) % 4)) % 4)
     padding = [0 for _ in range(padding)]
 
+    # data reading
+    if bpp == 1:
+        def get_bytes(x_, y_):
+            return bytearray([image[y_][x_] > 0] + padding)
+    elif bpp == 4:
+        pass  # palette stuff
+    elif bpp == 8:
+        pass  # palette stuff
+    elif bpp == 16:
+        pass  # rgb565
+    elif bpp == 24:
+        def get_bytes(x_, y_):
+            red = (image[y_][x_] >> 16) & 255
+            green = (image[y_][x_] >> 8) & 255
+            blue = image[y_][x_] & 255
+
+            return bytearray([blue, green, red] + padding)
+    else:
+        raise NotImplementedError()
+
     # pixel data
     for y in range(height):
         for x in range(width):
-            red = (image[y][x] >> 16) & 255
-            green = (image[y][x] >> 8) & 255
-            blue = image[y][x] & 255
-
-            data += bytearray([blue, green, red] + padding)
+            data += get_bytes(x, y)
 
     return data
 
