@@ -10,6 +10,14 @@ def rbg888_to_rgb565(r: int, g: int, b: int) -> tuple[int, int, int]:
     return red, green, blue
 
 
+def float_rgb_to_rgb888(r: float, g: float, b: float) -> tuple[int, int, int]:
+    """
+    Converts float rgb values to rgb888. Each component is in range 0 - 1
+    """
+
+    return int(r * 255), int(g * 255), int(b * 255)
+
+
 def make_bitmap(image: list[list[int]], bpp: int = 24) -> bytes:
     """
     Returns a bitmap image bytes
