@@ -18,6 +18,22 @@ def float_rgb_to_rgb888(r: float, g: float, b: float) -> tuple[int, int, int]:
     return int(r * 255), int(g * 255), int(b * 255)
 
 
+def combine_rgb888(r: int, g: int, b: int) -> int:
+    """
+    Combines rgb888 into 1 value
+    """
+
+    return (r << 16) + (g << 8) + b
+
+
+def combine_rgb565(r: int, g: int, b: int) -> int:
+    """
+    Combines rgb565 into 1 value
+    """
+
+    return (r << 11) + (g << 5) + b
+
+
 def make_bitmap(image: list[list[int]], bpp: int = 24) -> bytes:
     """
     Returns a bitmap image bytes
