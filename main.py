@@ -117,11 +117,8 @@ def main():
 
     for y in range(height):
         for x in range(width):
-            red = x / width * 31
-            green = y / height * 63
-            blue = 0
-
-            image[y][x] = (int(red) << 11) + (int(green) << 5) + int(blue)
+            color = float_rgb_to_rgb565(x / width / 2, y / height / 2, 0)
+            image[y][x] = combine_rgb565(*color)
 
     with open("test.bmp", "wb") as file:
         file.write(make_bitmap(image, 16))
