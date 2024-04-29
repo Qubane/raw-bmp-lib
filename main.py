@@ -43,18 +43,20 @@ def make_bitmap(image: list[list[int]], bpp: int = 24) -> bytes:
         def get_bytes(x_, y_):
             return bytearray([image[y_][x_] > 0] + padding)
     elif bpp == 4:
-        pass  # palette stuff
-    elif bpp == 8:
-        pass  # palette stuff
-    elif bpp == 16:
-        pass  # rgb565
-    elif bpp == 24:
         def get_bytes(x_, y_):
-            red = (image[y_][x_] >> 16) & 255
-            green = (image[y_][x_] >> 8) & 255
-            blue = image[y_][x_] & 255
-
-            return bytearray([blue, green, red] + padding)
+            return bytes(0)
+    elif bpp == 8:
+        def get_bytes(x_, y_):
+            return bytes(0)
+    elif bpp == 16:  # rgb565
+        def get_bytes(x_, y_):
+            return (image[y_][x_] & 65535).to_bytes(2, 'little')
+    elif bpp == 24:  # rgb888
+        def get_bytes(x_, y_):
+            return (image[y_][x_] & 16777215).to_bytes(3, 'little')
+    elif bpp == 32:  # rgba
+        def get_bytes(x_, y_):
+            return (image[y_][x_] & 4294967295).to_bytes(4, 'little')
     else:
         raise NotImplementedError()
 
@@ -67,14 +69,21 @@ def make_bitmap(image: list[list[int]], bpp: int = 24) -> bytes:
 
 
 def main():
-    image = [[0 for _ in range(128)] for _ in range(128)]
+    width = 128
+    height = 128
 
-    for y in range(128):
-        for x in range(128):
-            image[y][x] = int(x / 128 * 255) * 65536 + int(y / 128 * 255)
+    image = [[0 for _ in range(width)] for _ in range(height)]
+
+    for y in range(height):
+        for x in range(width):
+            red = x / width * 31
+            green = y / height * 63
+            blue = 0
+
+            image[y][x] = (int(red) << 11) + (int(green) << 5) + int(blue)
 
     with open("test.bmp", "wb") as file:
-        file.write(make_bitmap(image, 24))
+        file.write(make_bitmap(image, 16))
 
 
 if __name__ == '__main__':
