@@ -100,11 +100,6 @@ def make_bitmap(image: list[list[Color]], bpp: BitDepth, palette: list[Color] | 
     else:
         raise Exception("Incorrect palette")
 
-    # color decoding function
-    if bpp == BitDepth.monochrome:
-        def get_value(col: Color):
-            return col
-
     # append the image data
     color_data = bytearray()
     for y in range(height):
