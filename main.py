@@ -77,15 +77,21 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
     padding = int((4 - ((width * bpp.value / 8) % 4)) % 4)
     padding = bytearray([0 for _ in range(padding)])
 
-    # if we need a palette
+    # if the palette is used
     if bpp.value <= 8 and palette is not None and len(palette) == (2 ** bpp.value):
         # append the palette
         for color in palette:
             data += color.rgb888.to_bytes(4, 'little')
+
+    # when no palette
     elif bpp.value > 8:
         pass
+
+    # if there is some kind of error when decoding the palette
     else:
         raise Exception("Incorrect palette")
+
+
 
     return bytes(1)
 
