@@ -48,7 +48,7 @@ class Color:
         return (self.r + self.g + self.b) > 0.5
 
 
-def make_bitmap(image: list[list[Color]], bpp: BitDepth, palette: list[Color] | None = None) -> bytes:
+def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | None = None) -> bytes:
     """
     Returns a bitmap image bytes
     """
@@ -101,10 +101,46 @@ def make_bitmap(image: list[list[Color]], bpp: BitDepth, palette: list[Color] | 
         raise Exception("Incorrect palette")
 
     # append the image data
-    color_data = bytearray()
+    color_data = 0
+    bit_offset = 0
+
     for y in range(height):
         for x in range(width):
-            pass
+            img_color = image[y][x]
+
+            # monochrome
+            if bpp is BitDepth.monochrome:
+                color_data = color_data + ((img_color > 0) << bit_offset)
+                bit_offset += 1
+                if bit_offset >= 8:
+                    data.append(color_data)
+                    color_data = 0
+                    bit_offset = 0
+
+            # palette 4 bit
+            elif bpp is BitDepth.pal4:
+                color_data = color_data + ((img_color & 15) << bit_offset)
+                bit_offset += 4
+                if bit_offset >= 8:
+                    data.append(color_data)
+                    color_data = 0
+                    bit_offset = 0
+
+            # palette 8 bit
+            elif bpp is BitDepth.pal8:
+                data.append(img_color & 255)
+
+            # rgb565
+            elif bpp is BitDepth.rgb565:
+                data += (img_color & 65535).to_bytes(2, 'little')
+
+            # rgb888
+            elif bpp is BitDepth.rgb888:
+                data += (img_color & 16777215).to_bytes(3, 'little')
+
+            # rgba
+            elif bpp is BitDepth.rgba:
+                data += (img_color & 4294967295).to_bytes(4, 'little')
 
     # return the bitmap image data
     return data
