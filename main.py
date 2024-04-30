@@ -19,7 +19,27 @@ class BitDepth(Enum):
     rgba = 32
 
 
-def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list | None = None) -> bytes:
+class Color:
+    """
+    Color class. Holds RGBA values as floats.
+    """
+
+    def __init__(self, r: float = 0, g: float = 0, b: float = 0, a: float = 0):
+        self.r = r
+        self.g = g
+        self.b = b
+        self.a = a
+
+    @property
+    def rgb565(self):
+        return (int(self.r * 31) << 11) + (int(self.g * 63) << 5) + int(self.b * 31)
+
+    @property
+    def rgb888(self):
+        return (int(self.r * 255) << 16) + (int(self.g * 255) << 8) + int(self.b * 255)
+
+
+def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | None = None) -> bytes:
     """
     Returns a bitmap image bytes
     """
@@ -59,7 +79,9 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list | None = No
 
     # if we need a palette
     if bpp.value <= 8 and palette is not None and len(palette) == (2 ** bpp.value):
-        pass
+        # append the palette
+        for color in palette:
+            data += color.rgb888.to_bytes(4, 'little')
     elif bpp.value > 8:
         pass
     else:
@@ -79,7 +101,7 @@ def main():
             image[y][x] = x
 
     with open("test.bmp", "wb") as file:
-        file.write(make_bitmap(image, BitDepth.monochrome, [0, 16777215]))
+        file.write(make_bitmap(image, BitDepth.monochrome, [Color(0, 0, 0), Color(1, 1, 1)]))
 
 
 if __name__ == '__main__':
