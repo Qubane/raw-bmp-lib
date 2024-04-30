@@ -170,12 +170,7 @@ def make_bitmap(image: list[list[Color]], bpp: BitDepth, palette: list[Color] | 
     return data
 
 
-def main():
-    # image settings
-    width = 256
-    height = 256
-    bit_depth = BitDepth.pal4
-
+def make_gradient(filename, width: int, height: int, bit_depth: BitDepth):
     # available colors
     num_colors = 2 ** bit_depth.value
 
@@ -183,10 +178,10 @@ def main():
     image = [[Color() for _ in range(width)] for _ in range(height)]
     for y in range(height):
         for x in range(width):
-            image[y][x] = Color(val=int((x / width) * num_colors))
+            image[y][x].val = int((x / width) * num_colors)
 
     # write it to a file
-    with open("test.bmp", "wb") as file:
+    with open(filename, "wb") as file:
         # create a bitmap file data
         bitmap = make_bitmap(
             image,
@@ -195,5 +190,36 @@ def main():
         file.write(bitmap)
 
 
+def make_mandelbrot(filename, width: int, height: int, iterations: int = 32):
+    def iterate(u_, v_):
+        za = u_
+        zb = v_
+        za, zb = za * za - zb * zb + u_, 2 * za * zb + v_
+        for i in range(iterations):
+            if za * za + zb * zb > 4:
+                return i
+            za, zb = za * za - zb * zb + u_, 2 * za * zb + v_
+        return iterations
+
+    # make an image
+    image = [[Color() for _ in range(width)] for _ in range(height)]
+    for y in range(height):
+        v = y / height * 2 - 1
+        for x in range(width):
+            u = x / width * 2 - 1
+            image[y][x].val = int((iterate(u - 0.5, v) / iterations) * 255)
+
+    # write it to a file
+    with open(filename, "wb") as file:
+        # create a bitmap file data
+        bitmap = make_bitmap(
+            image,
+            BitDepth.pal8,
+            [Color(i / 255, i / 255, i / 255) for i in range(256)])
+        file.write(bitmap)
+
+
 if __name__ == '__main__':
-    main()
+    make_gradient("grad4.bmp", 256, 256, BitDepth.pal4)
+    make_gradient("grad8.bmp", 256, 256, BitDepth.pal8)
+    make_mandelbrot("mand.bmp", 256, 256)

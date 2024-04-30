@@ -159,3 +159,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 /test.bmp
+/grad4.bmp
+/grad8.bmp
+/mand.bmp
