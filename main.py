@@ -48,6 +48,27 @@ class Color:
         return (self.r + self.g + self.b) > 0.5
 
 
+def bit_flip(x: int):
+    """
+    Flips the bit order in a 8bit number
+    """
+
+    # abcd_efgh
+    # efgh_abcd
+
+    # ef_gh_ab_cd
+    # gh_ef_cd_ab
+
+    # g_h_e_f_c_d_a_b
+    # h_g_f_e_d_c_b_a
+
+    x = (x & 0xF0) >> 4 | (x & 0x0F) << 4
+    x = (x & 0xCC) >> 2 | (x & 0x33) << 2
+    x = (x & 0xAA) >> 1 | (x & 0x55) << 1
+
+    return x
+
+
 def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | None = None) -> bytes:
     """
     Returns a bitmap image bytes
@@ -103,7 +124,6 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
     # append the image data
     color_data = 0
     bit_offset = 0
-
     for y in range(height):
         for x in range(width):
             img_color = image[y][x]
@@ -113,7 +133,7 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
                 color_data = color_data + ((img_color > 0) << bit_offset)
                 bit_offset += 1
                 if bit_offset >= 8:
-                    data.append(color_data)
+                    data.append(bit_flip(color_data))
                     color_data = 0
                     bit_offset = 0
 
@@ -122,7 +142,7 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
                 color_data = color_data + ((img_color & 15) << bit_offset)
                 bit_offset += 4
                 if bit_offset >= 8:
-                    data.append(color_data)
+                    data.append((color_data & 0xF0) >> 4 | (color_data & 0x0F) << 4)
                     color_data = 0
                     bit_offset = 0
 
@@ -162,11 +182,8 @@ def main():
     with open("test.bmp", "wb") as file:
         bitmap = make_bitmap(
             image,
-            BitDepth.monochrome,
-            [
-                Color(0, 0, 0),
-                Color(1, 1, 1)
-            ]
+            BitDepth.pal4,
+            [Color(i / 16, i / 16, i / 16) for i in range(16)]
         )
         file.write(bitmap)
 
