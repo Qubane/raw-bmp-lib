@@ -31,12 +31,21 @@ class Color:
         self.a = a
 
     @property
-    def rgb565(self):
+    def rgb565(self) -> int:
         return (int(self.r * 31) << 11) + (int(self.g * 63) << 5) + int(self.b * 31)
 
     @property
-    def rgb888(self):
+    def rgb888(self) -> int:
         return (int(self.r * 255) << 16) + (int(self.g * 255) << 8) + int(self.b * 255)
+
+    @property
+    def rgba(self) -> int:
+        return (int(self.r * 255) << 24) + (int(self.g * 255) << 16) + (int(self.b * 255) << 8) + int(self.a * 255)
+
+    @property
+    def enabled(self) -> bool:
+        # not accurate, but it's fine
+        return (self.r + self.g + self.b) > 0.5
 
 
 def make_bitmap(image: list[list[Color]], bpp: BitDepth, palette: list[Color] | None = None) -> bytes:
@@ -91,7 +100,13 @@ def make_bitmap(image: list[list[Color]], bpp: BitDepth, palette: list[Color] | 
     else:
         raise Exception("Incorrect palette")
 
+    # color decoding function
+    if bpp == BitDepth.monochrome:
+        def get_value(col: Color):
+            return col
+
     # append the image data
+    color_data = bytearray()
     for y in range(height):
         for x in range(width):
             pass
