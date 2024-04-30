@@ -9,6 +9,15 @@ class BitDepth(Enum):
     bpp24 = 24  # rgb888 (8 red | 8 green | 8 blue)
     bpp32 = 32  # rgba (8 red | 8 green | 8 blue | 8 alpha)
 
+    # aliases
+    monochrome = 1
+    pal4 = 4
+    pal8 = 8
+    rgb565 = 16
+    rgb = 24
+    rgb888 = 24
+    rgba = 32
+
 
 def make_bitmap(image: list[list[int]], bpp: BitDepth) -> bytes:
     """
@@ -22,7 +31,7 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth) -> bytes:
     height = len(image)
 
     # filesize
-    filesize = width * height * bpp // 8
+    filesize = int(width * height * bpp.value / 8)
 
     # file header
     data += b'BM'  # Signature
@@ -35,7 +44,7 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth) -> bytes:
     data += width.to_bytes(4, 'little')  # width
     data += height.to_bytes(4, 'little')  # height
     data += (1).to_bytes(2, 'little')  # planes
-    data += bpp.to_bytes(2, 'little')  # Bits Per Pixel
+    data += bpp.value.to_bytes(2, 'little')  # Bits Per Pixel
     data += (0).to_bytes(4)  # Compression
     data += (0).to_bytes(4)  # ImageSize
     data += (0).to_bytes(4)  # XpixelsPerM
@@ -44,7 +53,7 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth) -> bytes:
     data += (0).to_bytes(4)  # Important Colors
 
     # padding amount
-    padding = int((4 - ((width * bpp / 8) % 4)) % 4)
+    padding = int((4 - ((width * bpp.value / 8) % 4)) % 4)
     padding = bytearray([0 for _ in range(padding)])
 
     print(padding)
@@ -53,18 +62,17 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth) -> bytes:
 
 
 def main():
-    width = 3
+    width = 128
     height = 128
 
     image = [[0 for _ in range(width)] for _ in range(height)]
 
     for y in range(height):
         for x in range(width):
-            color = float_rgb_to_rgb565(x / width, y / height, 0)
-            image[y][x] = combine_rgb565(*color)
+            image[y][x] = x
 
     with open("test.bmp", "wb") as file:
-        file.write(make_bitmap(image, 8))
+        file.write(make_bitmap(image, BitDepth.rgb))
 
 
 if __name__ == '__main__':
