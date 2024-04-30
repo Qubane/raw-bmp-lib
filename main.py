@@ -44,9 +44,31 @@ class Color:
         return (int(self.r * 255) << 24) + (int(self.g * 255) << 16) + (int(self.b * 255) << 8) + int(self.a * 255)
 
     @property
-    def enabled(self) -> bool:
+    def threshold(self) -> bool:
         # not accurate, but it's fine
         return (self.r + self.g + self.b) > 0.5
+
+    @staticmethod
+    def hsv2rgb(h, s, v):
+        i = int(h * 6)
+        f = h * 6 - i
+        p = v * (1 - s)
+        q = v * (1 - f * s)
+        t = v * (1 - (1 - f) * s)
+
+        match i % 6:
+            case 0:
+                return Color(v, t, p)
+            case 1:
+                return Color(q, v, p)
+            case 2:
+                return Color(p, v, t)
+            case 3:
+                return Color(p, q, v)
+            case 4:
+                return Color(t, p, v)
+            case 5:
+                return Color(v, p, q)
 
 
 def bit_flip(x: int):
@@ -207,15 +229,14 @@ def make_mandelbrot(filename, width: int, height: int, iterations: int = 32):
         v = y / height * 2 - 1
         for x in range(width):
             u = x / width * 2 - 1
-            image[y][x].val = int((iterate(u - 0.5, v) / iterations) * 255)
+            value = iterate(u - 0.5, v)
+            if value != iterations:
+                image[y][x] = Color.hsv2rgb((value / iterations) ** 1.5, 1, 1)
 
     # write it to a file
     with open(filename, "wb") as file:
         # create a bitmap file data
-        bitmap = make_bitmap(
-            image,
-            BitDepth.pal8,
-            [Color(i / 255, i / 255, i / 255) for i in range(256)])
+        bitmap = make_bitmap(image, BitDepth.rgb565)
         file.write(bitmap)
 
 
