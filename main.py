@@ -10,50 +10,6 @@ class BitDepth(Enum):
     bpp32 = 32  # rgba (8 red | 8 green | 8 blue | 8 alpha)
 
 
-def rbg888_to_rgb565(r: int, g: int, b: int) -> tuple[int, int, int]:
-    """
-    Converts rgb888 to rgb565
-    """
-
-    red = int(r / 255 * 31)
-    green = int(g / 255 * 63)
-    blue = int(b / 255 * 31)
-
-    return red, green, blue
-
-
-def float_rgb_to_rgb888(r: float, g: float, b: float) -> tuple[int, int, int]:
-    """
-    Converts float rgb values to rgb888. Each component is in range 0 - 1
-    """
-
-    return int(r * 255), int(g * 255), int(b * 255)
-
-
-def float_rgb_to_rgb565(r: float, g: float, b: float) -> tuple[int, int, int]:
-    """
-    Converts float rgb values to rgb888. Each component is in range 0 - 1
-    """
-
-    return int(r * 31), int(g * 63), int(b * 31)
-
-
-def combine_rgb888(r: int, g: int, b: int) -> int:
-    """
-    Combines rgb888 into 1 value
-    """
-
-    return (r << 16) + (g << 8) + b
-
-
-def combine_rgb565(r: int, g: int, b: int) -> int:
-    """
-    Combines rgb565 into 1 value
-    """
-
-    return (r << 11) + (g << 5) + b
-
-
 def make_bitmap(image: list[list[int]], bpp: BitDepth) -> bytes:
     """
     Returns a bitmap image bytes
