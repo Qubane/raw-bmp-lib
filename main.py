@@ -39,7 +39,7 @@ class Color:
         return (int(self.r * 255) << 16) + (int(self.g * 255) << 8) + int(self.b * 255)
 
 
-def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | None = None) -> bytes:
+def make_bitmap(image: list[list[Color]], bpp: BitDepth, palette: list[Color] | None = None) -> bytes:
     """
     Returns a bitmap image bytes
     """
@@ -91,9 +91,13 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
     else:
         raise Exception("Incorrect palette")
 
+    # append the image data
+    for y in range(height):
+        for x in range(width):
+            pass
 
-
-    return bytes(1)
+    # return the bitmap image data
+    return data
 
 
 def main():
