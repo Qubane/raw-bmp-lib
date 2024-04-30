@@ -19,11 +19,12 @@ class BitDepth(Enum):
     rgba = 32
 
 
-def make_bitmap(image: list[list[int]], bpp: BitDepth) -> bytes:
+def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list | None = None) -> bytes:
     """
     Returns a bitmap image bytes
     """
 
+    # make file data array
     data = bytearray()
 
     # image width and height
@@ -56,7 +57,13 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth) -> bytes:
     padding = int((4 - ((width * bpp.value / 8) % 4)) % 4)
     padding = bytearray([0 for _ in range(padding)])
 
-    print(padding)
+    # if we need a palette
+    if bpp.value <= 8 and palette is not None and len(palette) == (2 ** bpp.value):
+        pass
+    elif bpp.value > 8:
+        pass
+    else:
+        raise Exception("Incorrect palette")
 
     return bytes(1)
 
@@ -72,7 +79,7 @@ def main():
             image[y][x] = x
 
     with open("test.bmp", "wb") as file:
-        file.write(make_bitmap(image, BitDepth.rgb))
+        file.write(make_bitmap(image, BitDepth.monochrome, [0, 16777215]))
 
 
 if __name__ == '__main__':
