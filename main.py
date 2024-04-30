@@ -24,11 +24,12 @@ class Color:
     Color class. Holds RGBA values as floats.
     """
 
-    def __init__(self, r: float = 0, g: float = 0, b: float = 0, a: float = 0):
-        self.r = r
-        self.g = g
-        self.b = b
-        self.a = a
+    def __init__(self, r: float = 0, g: float = 0, b: float = 0, a: float = 0, val: int = 0):
+        self.val: int = val
+        self.r: float = r
+        self.g: float = g
+        self.b: float = b
+        self.a: float = a
 
     @property
     def rgb565(self) -> int:
@@ -69,7 +70,7 @@ def bit_flip(x: int):
     return x
 
 
-def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | None = None) -> bytes:
+def make_bitmap(image: list[list[Color]], bpp: BitDepth, palette: list[Color] | None = None) -> bytes:
     """
     Returns a bitmap image bytes
     """
@@ -130,7 +131,7 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
 
             # monochrome
             if bpp is BitDepth.monochrome:
-                color_data = color_data + ((img_color > 0) << bit_offset)
+                color_data = color_data + ((img_color.val & 1) << bit_offset)
                 bit_offset += 1
                 if bit_offset >= 8:
                     data.append(bit_flip(color_data))
@@ -139,7 +140,7 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
 
             # palette 4 bit
             elif bpp is BitDepth.pal4:
-                color_data = color_data + ((img_color & 15) << bit_offset)
+                color_data = color_data + ((img_color.val & 15) << bit_offset)
                 bit_offset += 4
                 if bit_offset >= 8:
                     data.append((color_data & 0xF0) >> 4 | (color_data & 0x0F) << 4)
@@ -148,19 +149,19 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
 
             # palette 8 bit
             elif bpp is BitDepth.pal8:
-                data.append(img_color & 255)
+                data.append(img_color.val & 255)
 
             # rgb565
             elif bpp is BitDepth.rgb565:
-                data += (img_color & 65535).to_bytes(2, 'little')
+                data += img_color.rgb565.to_bytes(2, 'little')
 
             # rgb888
             elif bpp is BitDepth.rgb888:
-                data += (img_color & 16777215).to_bytes(3, 'little')
+                data += img_color.rgb888.to_bytes(3, 'little')
 
             # rgba
             elif bpp is BitDepth.rgba:
-                data += (img_color & 4294967295).to_bytes(4, 'little')
+                data += img_color.rgba.to_bytes(4, 'little')
 
         # add padding
         data += padding
@@ -170,21 +171,27 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
 
 
 def main():
-    width = 128
-    height = 128
+    # image settings
+    width = 256
+    height = 256
+    bit_depth = BitDepth.pal4
 
-    image = [[0 for _ in range(width)] for _ in range(height)]
+    # available colors
+    num_colors = 2 ** bit_depth.value
 
+    # make a test gradient image
+    image = [[Color() for _ in range(width)] for _ in range(height)]
     for y in range(height):
         for x in range(width):
-            image[y][x] = x
+            image[y][x] = Color(val=int((x / width) * num_colors))
 
+    # write it to a file
     with open("test.bmp", "wb") as file:
+        # create a bitmap file data
         bitmap = make_bitmap(
             image,
-            BitDepth.pal4,
-            [Color(i / 16, i / 16, i / 16) for i in range(16)]
-        )
+            bit_depth,
+            [Color(i / (num_colors-1), i / (num_colors-1), i / (num_colors-1)) for i in range(num_colors)])
         file.write(bitmap)
 
 
