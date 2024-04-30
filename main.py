@@ -142,6 +142,9 @@ def make_bitmap(image: list[list[int]], bpp: BitDepth, palette: list[Color] | No
             elif bpp is BitDepth.rgba:
                 data += (img_color & 4294967295).to_bytes(4, 'little')
 
+        # add padding
+        data += padding
+
     # return the bitmap image data
     return data
 
