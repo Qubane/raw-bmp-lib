@@ -1,3 +1,15 @@
+from enum import Enum
+
+
+class BitDepth(Enum):
+    bpp1 = 1    # monochrome
+    bpp4 = 4    # 16 color palette
+    bpp8 = 8    # 256 color palette
+    bpp16 = 16  # rgb565 (5 red | 6 green | 5 blue)
+    bpp24 = 24  # rgb888 (8 red | 8 green | 8 blue)
+    bpp32 = 32  # rgba (8 red | 8 green | 8 blue | 8 alpha)
+
+
 def rbg888_to_rgb565(r: int, g: int, b: int) -> tuple[int, int, int]:
     """
     Converts rgb888 to rgb565
@@ -42,7 +54,7 @@ def combine_rgb565(r: int, g: int, b: int) -> int:
     return (r << 11) + (g << 5) + b
 
 
-def make_bitmap(image: list[list[int]], bpp: int = 24) -> bytes:
+def make_bitmap(image: list[list[int]], bpp: BitDepth) -> bytes:
     """
     Returns a bitmap image bytes
     """
@@ -76,52 +88,27 @@ def make_bitmap(image: list[list[int]], bpp: int = 24) -> bytes:
     data += (0).to_bytes(4)  # Important Colors
 
     # padding amount
-    padding = ((4 - ((width * (bpp // 8)) % 4)) % 4)
-    padding = [0 for _ in range(padding)]
+    padding = int((4 - ((width * bpp / 8) % 4)) % 4)
+    padding = bytearray([0 for _ in range(padding)])
 
-    # data reading
-    if bpp == 1:
-        def get_bytes(x_, y_):
-            return bytearray([image[y_][x_] > 0] + padding)
-    elif bpp == 4:
-        def get_bytes(x_, y_):
-            return bytes(0)
-    elif bpp == 8:
-        def get_bytes(x_, y_):
-            return bytes(0)
-    elif bpp == 16:  # rgb565
-        def get_bytes(x_, y_):
-            return (image[y_][x_] & 65535).to_bytes(2, 'little')
-    elif bpp == 24:  # rgb888
-        def get_bytes(x_, y_):
-            return (image[y_][x_] & 16777215).to_bytes(3, 'little')
-    elif bpp == 32:  # rgba
-        def get_bytes(x_, y_):
-            return (image[y_][x_] & 4294967295).to_bytes(4, 'little')
-    else:
-        raise NotImplementedError()
+    print(padding)
 
-    # pixel data
-    for y in range(height):
-        for x in range(width):
-            data += get_bytes(x, y)
-
-    return data
+    return bytes(1)
 
 
 def main():
-    width = 128
+    width = 3
     height = 128
 
     image = [[0 for _ in range(width)] for _ in range(height)]
 
     for y in range(height):
         for x in range(width):
-            color = float_rgb_to_rgb565(x / width / 2, y / height / 2, 0)
+            color = float_rgb_to_rgb565(x / width, y / height, 0)
             image[y][x] = combine_rgb565(*color)
 
     with open("test.bmp", "wb") as file:
-        file.write(make_bitmap(image, 16))
+        file.write(make_bitmap(image, 8))
 
 
 if __name__ == '__main__':
