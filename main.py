@@ -101,7 +101,15 @@ def main():
             image[y][x] = x
 
     with open("test.bmp", "wb") as file:
-        file.write(make_bitmap(image, BitDepth.monochrome, [Color(0, 0, 0), Color(1, 1, 1)]))
+        bitmap = make_bitmap(
+            image,
+            BitDepth.monochrome,
+            [
+                Color(0, 0, 0),
+                Color(1, 1, 1)
+            ]
+        )
+        file.write(bitmap)
 
 
 if __name__ == '__main__':
