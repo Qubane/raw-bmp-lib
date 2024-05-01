@@ -2,6 +2,10 @@ from enum import Enum
 
 
 class BitDepth(Enum):
+    """
+    BitDepth enum class
+    """
+
     bpp1 = 1    # monochrome
     bpp4 = 4    # 16 color palette
     bpp8 = 8    # 256 color palette
@@ -71,7 +75,7 @@ class Color:
                 return Color(v, p, q)
 
 
-def bit_flip(x: int):
+def bit_flip(x: int) -> int:
     """
     Flips the bit order in a 8bit number
     """
@@ -192,7 +196,17 @@ def make_bitmap(image: list[list[Color]], bpp: BitDepth, palette: list[Color] | 
     return data
 
 
-def make_gradient(filename, width: int, height: int, bit_depth: BitDepth):
+def read_bitmap(data: bytes) -> list[list[Color]]:
+    """
+    Reads the data from bitmap
+    """
+
+
+def make_gradient(width: int, height: int, bit_depth: BitDepth) -> bytes:
+    """
+    Makes a gradient with given width, height and bitdepth
+    """
+
     # available colors
     num_colors = 2 ** bit_depth.value
 
@@ -202,17 +216,18 @@ def make_gradient(filename, width: int, height: int, bit_depth: BitDepth):
         for x in range(width):
             image[y][x].val = int((x / width) * num_colors)
 
-    # write it to a file
-    with open(filename, "wb") as file:
-        # create a bitmap file data
-        bitmap = make_bitmap(
-            image,
-            bit_depth,
-            [Color(i / (num_colors-1), i / (num_colors-1), i / (num_colors-1)) for i in range(num_colors)])
-        file.write(bitmap)
+    # return bitmap image
+    return make_bitmap(
+        image,
+        bit_depth,
+        [Color(i / (num_colors-1), i / (num_colors-1), i / (num_colors-1)) for i in range(num_colors)])
 
 
-def make_mandelbrot(filename, width: int, height: int, iterations: int = 32):
+def make_mandelbrot(width: int, height: int, iterations: int = 32) -> bytes:
+    """
+    Makes a mandelbrot set bitmap image with given width, height
+    """
+
     def iterate(u_, v_):
         za = u_
         zb = v_
@@ -233,14 +248,14 @@ def make_mandelbrot(filename, width: int, height: int, iterations: int = 32):
             if value != iterations:
                 image[y][x] = Color.hsv2rgb((value / iterations) ** 1.5, 1, 1)
 
-    # write it to a file
-    with open(filename, "wb") as file:
-        # create a bitmap file data
-        bitmap = make_bitmap(image, BitDepth.rgb565)
-        file.write(bitmap)
+    # return bitmap image
+    return make_bitmap(image, BitDepth.rgb565)
 
 
 if __name__ == '__main__':
-    make_gradient("grad4.bmp", 256, 256, BitDepth.pal4)
-    make_gradient("grad8.bmp", 256, 256, BitDepth.pal8)
-    make_mandelbrot("mand.bmp", 256, 256)
+    with open("grad4.bmp", "wb") as file:
+        file.write(make_gradient(256, 256, BitDepth.pal4))
+    with open("grad8.bmp", "wb") as file:
+        file.write(make_gradient(256, 256, BitDepth.pal8))
+    with open("mand.bmp", "wb") as file:
+        file.write(make_mandelbrot(256, 256))
